@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Inventario de Activos - Coomeva</title>
+    <style>
+        :root{font-family:Inter,Segoe UI,Arial,sans-serif;color:#222}
+        body{margin:20px;background:#f6f8fa}
+        .container{max-width:1100px;margin:0 auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+        h1{margin:0 0 12px;font-size:20px}
+        form{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+        label{font-size:12px;color:#333}
+        input,select,textarea,button{padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px}
+        textarea{resize:vertical}
+        .full{grid-column:span 4}
+        .actions{display:flex;gap:8px;align-items:center}
+        table{width:100%;border-collapse:collapse;margin-top:12px}
+        th,td{padding:8px;border-bottom:1px solid #e6e9ee;text-align:left;font-size:13px}
+        th{background:#fafbfc;position:sticky;top:0}
+        .small{font-size:12px;color:#6b7280}
+        .btn{cursor:pointer;background:#0366d6;color:#fff;border:none}
+        .btn.secondary{background:#6b7280}
+        .btn.danger{background:#d64545}
+        .controls{display:flex;gap:8px;align-items:center;justify-content:space-between}
+        .filter{display:flex;gap:8px;align-items:center}
+        @media(max-width:900px){form{grid-template-columns:repeat(2,1fr)} .full{grid-column:span 2}}
+        @media(max-width:520px){form{grid-template-columns:1fr} .full{grid-column:span 1}}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Inventario de Activos - Coomeva</h1>
+        <p class="small">Registrar y gestionar activos: equipos portátiles, de mesa, impresoras, monitores, y otros.</p>
+
+        <form id="assetForm" autocomplete="off">
+            <div>
+                <label for="tipo">Tipo</label>
+                <select id="tipo" required>
+                    <option value="">— seleccionar —</option>
+                    <option>Portátil</option>
+                    <option>Equipo de mesa</option>
+                    <option>Impresora</option>
+                    <option>Monitor</option>
+                    <option>Teléfono móvil</option>
+                    <option>Otro</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="codigo">Código/Inventario</label>
+                <input id="codigo" placeholder="Ej: INV-0001" required />
+            </div>
+
+            <div>
+                <label for="marca">Marca</label>
+                <input id="marca" placeholder="Ej: HP, Lenovo, Dell" />
+            </div>
+
+            <div>
+                <label for="modelo">Modelo</label>
+                <input id="modelo" />
+            </div>
+
+            <div>
+                <label for="serial">Serial</label>
+                <input id="serial" />
+            </div>
+
+            <div>
+                <label for="responsable">Responsable</label>
+                <input id="responsable" placeholder="Nombre del usuario" />
+            </div>
+
+            <div>
+                <label for="ubicacion">Ubicación</label>
+                <input id="ubicacion" placeholder="Sucursal / Oficina / Dirección" />
+            </div>
+
+            <div>
+                <label for="estado">Estado</label>
+                <select id="estado">
+                    <option>En uso</option>
+                    <option>En almacenamiento</option>
+                    <option>En reparación</option>
+                    <option>Retirado</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="fechaCompra">Fecha de compra</label>
+                <input id="fechaCompra" type="date" />
+            </div>
+
+            <div>
+                <label for="valor">Valor (COP)</label>
+                <input id="valor" type="number" min="0" step="0.01" />
+            </div>
+
+            <div class="full">
+                <label for="obs">Observaciones</label>
+                <textarea id="obs" rows="2" placeholder="Notas adicionales"></textarea>
+            </div>
+
+            <div class="full actions">
+                <button class="btn" type="submit" id="saveBtn">Agregar / Actualizar</button>
+                <button class="btn secondary" type="button" id="clearForm">Limpiar formulario</button>
+                <button class="btn secondary" type="button" id="exportCsv">Exportar CSV</button>
+                <button class="btn danger" type="button" id="clearAll">Eliminar todos</button>
+            </div>
+        </form>
+
+        <div class="controls">
+            <div class="filter">
+                <label class="small" for="filterTipo">Filtro tipo:</label>
+                <select id="filterTipo">
+                    <option value="">Todos</option>
+                    <option>Portátil</option>
+                    <option>Equipo de mesa</option>
+                    <option>Impresora</option>
+                    <option>Monitor</option>
+                    <option>Teléfono móvil</option>
+                    <option>Otro</option>
+                </select>
+                <input id="search" placeholder="Buscar por código, serial, responsable..." />
+            </div>
+            <div class="small" id="count">0 activos</div>
+        </div>
+
+        <table id="assetsTable">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Tipo</th>
+                    <th>Marca / Modelo</th>
+                    <th>Serial</th>
+                    <th>Responsable</th>
+                    <th>Ubicación</th>
+                    <th>Estado</th>
+                    <th>Fecha compra</th>
+                    <th>Valor</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <p class="small" style="margin-top:10px">Datos almacenados localmente en el navegador. Use la exportación CSV para enviar registros a sistemas centrales.</p>
+    </div>
+
+    <script>
+        // Simple inventario local usando localStorage
+        const form = document.getElementById('assetForm');
+        const fields = {
+            tipo: document.getElementById('tipo'),
+            codigo: document.getElementById('codigo'),
+            marca: document.getElementById('marca'),
+            modelo: document.getElementById('modelo'),
+            serial: document.getElementById('serial'),
+            responsable: document.getElementById('responsable'),
+            ubicacion: document.getElementById('ubicacion'),
+            estado: document.getElementById('estado'),
+            fechaCompra: document.getElementById('fechaCompra'),
+            valor: document.getElementById('valor'),
+            obs: document.getElementById('obs')
+        };
+        const tableBody = document.querySelector('#assetsTable tbody');
+        const filterTipo = document.getElementById('filterTipo');
+        const search = document.getElementById('search');
+        const countEl = document.getElementById('count');
+
+        let assets = JSON.parse(localStorage.getItem('coomeva_assets') || '[]');
+        let editingIndex = -1;
+
+        function saveStorage() {
+            localStorage.setItem('coomeva_assets', JSON.stringify(assets));
+        }
+
+        function render() {
+            const tipoFilter = filterTipo.value;
+            const q = search.value.trim().toLowerCase();
+            tableBody.innerHTML = '';
+            const visible = assets.filter(a => {
+                if (tipoFilter && a.tipo !== tipoFilter) return false;
+                if (!q) return true;
+                return [a.codigo, a.serial, a.responsable, a.marca, a.modelo, a.ubicacion]
+                    .join(' ').toLowerCase().includes(q);
+            });
+            visible.forEach((a, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${escapeHtml(a.codigo)}</td>
+                    <td>${escapeHtml(a.tipo)}</td>
+                    <td>${escapeHtml(a.marca)} ${escapeHtml(a.modelo)}</td>
+                    <td>${escapeHtml(a.serial)}</td>
+                    <td>${escapeHtml(a.responsable)}</td>
+                    <td>${escapeHtml(a.ubicacion)}</td>
+                    <td>${escapeHtml(a.estado)}</td>
+                    <td>${a.fechaCompra||''}</td>
+                    <td>${a.valor?Number(a.valor).toLocaleString('es-CO',{style:'currency',currency:'COP'}):''}</td>
+                    <td>
+                        <button data-i="${i}" class="edit small">Editar</button>
+                        <button data-i="${i}" class="delete small">Eliminar</button>
+                    </td>`;
+                tableBody.appendChild(tr);
+            });
+            countEl.textContent = `${visible.length} activos`;
+        }
+
+        function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
+
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            const data = {};
+            for (const k in fields) data[k] = fields[k].value.trim();
+            if (!data.codigo || !data.tipo) { alert('Código y Tipo son obligatorios'); return; }
+            if (editingIndex >= 0) {
+                assets[editingIndex] = data;
+                editingIndex = -1;
+                document.getElementById('saveBtn').textContent = 'Agregar / Actualizar';
+            } else {
+                assets.push(data);
+            }
+            saveStorage();
+            render();
+            form.reset();
+        });
+
+        document.getElementById('clearForm').addEventListener('click', () => {
+            form.reset();
+            editingIndex = -1;
+            document.getElementById('saveBtn').textContent = 'Agregar / Actualizar';
+        });
+
+        document.getElementById('clearAll').addEventListener('click', () => {
+            if (!confirm('Eliminar todos los activos?')) return;
+            assets = [];
+            saveStorage();
+            render();
+        });
+
+        tableBody.addEventListener('click', e => {
+            const t = e.target;
+            if (t.matches('.edit')) {
+                const i = Number(t.dataset.i);
+                const a = assets[i];
+                for (const k in fields) fields[k].value = a[k] || '';
+                editingIndex = i;
+                document.getElementById('saveBtn').textContent = 'Actualizar';
+                window.scrollTo({top:0,behavior:'smooth'});
+            } else if (t.matches('.delete')) {
+                const i = Number(t.dataset.i);
+                if (!confirm('Eliminar activo ' + assets[i].codigo + '?')) return;
+                assets.splice(i,1);
+                saveStorage();
+                render();
+            }
+        });
+
+        filterTipo.addEventListener('change', render);
+        search.addEventListener('input', render);
+
+        document.getElementById('exportCsv').addEventListener('click', () => {
+            if (!assets.length) { alert('No hay registros para exportar'); return; }
+            const cols = ['codigo','tipo','marca','modelo','serial','responsable','ubicacion','estado','fechaCompra','valor','obs'];
+            const rows = [cols.join(',')].concat(assets.map(a => cols.map(c => csvSafe(a[c]||'')).join(',')));
+            const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8;'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'inventario_coomeva.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        function csvSafe(v){
+            v = String(v).replace(/"/g,'""');
+            if (v.includes(',')||v.includes('\n')||v.includes('"')) return `"${v}"`;
+            return v;
+        }
+
+        // inicializar
+        render();
+    </script>
+</body>
+</html>

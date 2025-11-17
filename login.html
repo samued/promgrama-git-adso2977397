@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Iniciar sesión</title>
+    <style>
+        /* Reset ligero */
+        * {box-sizing: border-box; margin: 0; padding: 0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+        html,body {height: 100%;}
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #f5f7fb 0%, #eef2f8 100%);
+            padding: 24px;
+            color: #0f172a;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(16,24,40,0.08);
+            padding: 28px;
+            border: 1px solid rgba(15,23,42,0.04);
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: inherit;
+        }
+        .logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 9px;
+            background: linear-gradient(135deg,#6366f1,#06b6d4);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(99,102,241,0.18);
+        }
+        h1 {font-size: 20px; margin-bottom: 6px;}
+        p.lead {font-size: 13px; color: #475569; margin-bottom: 18px;}
+
+        form {display: grid; gap: 12px;}
+        label {font-size: 13px; color: #0f172a; margin-bottom: 6px; display:block;}
+        .input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #e6eef8;
+            background: #fbfdff;
+            padding: 10px 12px;
+            border-radius: 8px;
+        }
+        input[type="email"],
+        input[type="password"] {
+            border: none;
+            outline: none;
+            background: transparent;
+            width: 100%;
+            font-size: 15px;
+            color: #0f172a;
+        }
+        .row {display:flex; justify-content: space-between; align-items: center; gap: 12px;}
+        .checkbox {display:flex; align-items:center; gap:8px; font-size:13px; color:#334155;}
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 11px 14px;
+            background: linear-gradient(90deg,#6366f1 0%,#06b6d4 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .secondary {
+            background: transparent;
+            border: 1px solid #e6eef8;
+            color: #0f172a;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .muted {font-size:13px;color:#64748b;}
+        .actions {display:flex; gap:10px; margin-top:6px;}
+        .divider {
+            display:flex; align-items:center; gap:10px; margin: 14px 0;
+        }
+        .divider::before, .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #e6eef8;
+        }
+        .socials {display:flex; gap:8px;}
+        .social {flex:1; padding:9px; border-radius:8px; border:1px solid #e6eef8; display:flex; align-items:center; justify-content:center; gap:8px; background: #fff; cursor:pointer; font-size:14px;}
+        .error {color:#b91c1c; font-size:13px; margin-top:6px; display:none;}
+
+        @media (max-width:420px){
+            .card {padding:18px;}
+        }
+    </style>
+</head>
+<body>
+    <main class="card" role="main">
+        <a class="brand" href="index.html" aria-label="Ir al inicio">
+            <span class="logo" aria-hidden="true">A</span>
+            <div>
+                <strong>Mi Aplicación</strong>
+                <div class="muted" style="margin-top:2px;">Iniciar sesión en tu cuenta</div>
+            </div>
+        </a>
+
+        <h1>Bienvenido de nuevo</h1>
+        <p class="lead">Introduce tus credenciales para continuar.</p>
+
+        <form id="loginForm" novalidate>
+            <div>
+                <label for="email">Correo electrónico</label>
+                <div class="input">
+                    <input id="email" name="email" type="email" inputmode="email" autocomplete="username" placeholder="tu@ejemplo.com" required aria-required="true" />
+                </div>
+            </div>
+
+            <div>
+                <label for="password">Contraseña</label>
+                <div class="input">
+                    <input id="password" name="password" type="password" autocomplete="current-password" placeholder="********" required aria-required="true" minlength="6" />
+                    <button type="button" id="togglePwd" title="Mostrar contraseña" aria-label="Mostrar contraseña" class="secondary" style="padding:6px 8px; font-size:13px;">Mostrar</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <label class="checkbox"><input id="remember" name="remember" type="checkbox" /> Recuérdame</label>
+                <a href="#" id="forgot" class="muted" style="text-decoration:none;">¿Olvidaste la contraseña?</a>
+            </div>
+
+            <div>
+                <button type="submit" class="btn">Iniciar sesión</button>
+            </div>
+
+            <div class="error" id="errorMsg" role="alert"></div>
+
+            <div class="divider"><span class="muted">o</span></div>
+
+            <div class="socials">
+                <button type="button" class="social" aria-label="Iniciar con Google">Google</button>
+                <button type="button" class="social" aria-label="Iniciar con GitHub">GitHub</button>
+            </div>
+
+            <div style="text-align:center; margin-top:12px;" class="muted">
+                ¿No tienes cuenta? <a href="register.html" style="text-decoration:none;">Regístrate</a>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        // Validación simple y toggle de contraseña
+        (function(){
+            const form = document.getElementById('loginForm');
+            const email = document.getElementById('email');
+            const password = document.getElementById('password');
+            const errorMsg = document.getElementById('errorMsg');
+            const toggle = document.getElementById('togglePwd');
+
+            toggle.addEventListener('click', () => {
+                const isPwd = password.type === 'password';
+                password.type = isPwd ? 'text' : 'password';
+                toggle.textContent = isPwd ? 'Ocultar' : 'Mostrar';
+                toggle.title = isPwd ? 'Ocultar contraseña' : 'Mostrar contraseña';
+            });
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                errorMsg.style.display = 'none';
+                errorMsg.textContent = '';
+
+                // Revisión básica
+                if (!email.checkValidity()) {
+                    errorMsg.textContent = 'Introduce un correo válido.';
+                    errorMsg.style.display = 'block';
+                    email.focus();
+                    return;
+                }
+                if (!password.checkValidity()) {
+                    errorMsg.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+                    errorMsg.style.display = 'block';
+                    password.focus();
+                    return;
+                }
+
+                // Aquí integrarías tu lógica real de autenticación (fetch/XHR).
+                // Demo: simular éxito y redirección a index.html
+                // Nota: cambiar por llamada real al servidor en producción.
+                const payload = {
+                    email: email.value.trim(),
+                    password: password.value,
+                    remember: document.getElementById('remember').checked
+                };
+                console.log('Intentando iniciar sesión con:', payload);
+
+                // Simulación de éxito
+                setTimeout(() => {
+                    // redirigir a la página principal
+                    window.location.href = 'index.html';
+                }, 700);
+            });
+        })();
+    </script>
+</body>
+</html>
